@@ -35,7 +35,7 @@ input:focus-visible,.btn:focus-visible{outline:2px solid var(--c)}
 #hud .t{position:absolute;top:16px;left:0;right:0;display:flex;justify-content:center;gap:34px;font-family:Orbitron;text-shadow:0 0 12px #000}
 #hud .t span{font-size:13px;color:var(--dim);display:block;font-family:'Noto Sans JP'}
 #hud .t b{font-size:28px}
-#cross{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px #000,0 0 10px var(--c)}
+.cx{position:absolute;left:50%;top:50%;width:0;height:0}.cx b{position:absolute}body.nohud #hud .t{display:none}
 #msg{position:absolute;left:0;right:0;top:36%;text-align:center;font:800 56px Orbitron;text-shadow:0 0 24px var(--c)}
 #msg.s{font-size:22px;top:58%;color:var(--dim);text-shadow:none;font-family:'Noto Sans JP';font-weight:700}
 .big{font-size:clamp(70px,16vw,140px);line-height:1}
@@ -60,23 +60,36 @@ body:not(.tm) #lk,body:not(.tm) #fire,body:not(.tm) #qt{display:none}
 #jy{position:absolute;width:90px;height:90px;border:2px solid var(--ln);border-radius:50%;display:none;pointer-events:none}#jy i{position:absolute;left:25px;top:25px;width:40px;height:40px;border-radius:50%;background:rgba(0,229,255,.4)}
 #qt{position:absolute;top:max(10px,env(safe-area-inset-top));right:12px;width:42px;height:42px;border-radius:50%;pointer-events:auto;border:1px solid var(--ln);background:rgba(0,0,0,.45);color:#fff;font-size:18px}
 @media(max-width:700px){#hud .t{gap:16px;top:max(12px,env(safe-area-inset-top))}#hud .t b{font-size:20px}#hud .t span{font-size:11px}#msg{font-size:40px}#msg.s{font-size:17px}.scr{padding:18px 12px}}
+
+.pn{background:var(--pan);border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin-bottom:12px}
+.sr{display:grid;grid-template-columns:160px 1fr 52px;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln);font-size:14px}
+.sr:last-child{border:0}.sr input[type=range]{width:100%;accent-color:var(--c)}.sr span:last-child{font:700 13px Orbitron;color:var(--c);text-align:right}
+select,textarea{font:14px 'Noto Sans JP';color:var(--tx);background:rgba(0,0,0,.45);border:1px solid var(--ln);border-radius:8px;padding:8px}
+textarea{width:100%;height:130px;margin-top:10px;font-family:ui-monospace,monospace;font-size:12px}
+details pre{font-size:12px;color:var(--dim);white-space:pre-wrap;margin-top:10px;line-height:1.7}summary{cursor:pointer}
+@media(max-width:700px){.sr{grid-template-columns:104px 1fr 44px;padding:9px 10px;font-size:13px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="hud" class="hide"><div class="t"><div><span id="hn"></span><b id="h1">-</b></div><div><span id="l2"></span><b id="h2">-</b></div><div><span id="l3"></span><b id="h3">-</b></div></div><div id="lk"></div><div id="jy"><i></i></div><div id="cross"></div><div id="msg"></div><button id="fire">FIRE</button><button id="qt" aria-label="中断">✕</button></div>
+<div id="hud" class="hide"><div class="t"><div><span id="hn"></span><b id="h1">-</b></div><div><span id="l2"></span><b id="h2">-</b></div><div><span id="l3"></span><b id="h3">-</b></div></div><div id="lk"></div><div id="jy"><i></i></div><div id="cross" class="cx"></div><div id="msg"></div><button id="fire">FIRE</button><button id="qt" aria-label="中断">✕</button></div>
 
 <div id="login" class="scr hide"><div class="in" style="max-width:420px"><div class="logo h" style="margin-bottom:8px">SKILL ARENA</div><p style="color:var(--dim);margin-bottom:22px">3Dスキルを測って、世界と競う。プレイヤー名を決めてください。</p><input id="nm" type="text" maxlength="14" placeholder="プレイヤー名"><div class="row" style="margin-top:14px"><button class="btn p" id="go">はじめる</button></div></div></div>
 
 <div id="menu" class="scr hide"><div class="in">
 <div class="top"><div><div class="logo h">SKILL ARENA</div><div class="row" style="margin-top:10px"><span id="who" class="h" style="font-size:15px"></span><button class="btn" id="ren" style="padding:5px 12px;font-size:12px">名前変更</button><span id="mode" class="tag"></span></div></div><div class="tot"><small>総合スコア</small><b class="h" id="tot">0</b></div></div>
 <div class="grid" id="cards"></div>
-<div class="bar"><label>感度 <input type="range" id="sens" min=".2" max="3" step=".05" style="vertical-align:middle"> <span id="sv"></span></label><button class="btn" id="rk">ランキング</button><span id="hint"></span></div>
+<div class="bar"><button class="btn" id="opt">⚙ 設定 / MOD</button><button class="btn" id="rk">ランキング</button><span id="hint"></span></div>
 </div></div>
 
 <div id="res" class="scr hide"><div class="in" style="text-align:center">
 <div class="h" id="rn" style="color:var(--dim)"></div><div class="rk h" id="rr"></div><div class="big h" id="rs" style="color:var(--c)"></div><div class="nb" id="rb"></div>
 <div class="st" id="rst"></div>
 <div class="row" style="justify-content:center"><button class="btn p" id="again">もう一度</button><button class="btn" id="rrk">ランキング</button><button class="btn" id="rm">メニュー</button></div></div></div>
+
+<div id="set" class="scr hide"><div class="in">
+<div class="top"><div class="logo h" style="font-size:34px">SETTINGS</div><button class="btn" id="setb">戻る</button></div>
+<div class="tabs"><button class="btn a" data-s="g">設定</button><button class="btn" data-s="m">MOD</button></div>
+<div id="sg"></div><div id="sm" class="hide"></div></div></div>
 
 <div id="rank" class="scr hide"><div class="in">
 <div class="top"><div class="logo h" style="font-size:34px">RANKING</div><button class="btn" id="rkb">戻る</button></div>
@@ -100,6 +113,11 @@ const SK=[
 {id:'dodge',n:'DODGE',d:'飛んでくる弾を避け続ける(WASD)',ok:1},
 {id:'memory',n:'MEMORY',d:'光った順番を記憶してクリック',ok:1},
 {id:'precision',n:'PRECISION',d:'位置とタイミングを正確に(10回)',ok:1}];
+const DEF={sens:+localStorage.getItem('sksens')||1,tsens:1.7,fov:75,invY:0,cs:'dot',csz:6,cg:4,cc:'#ffffff',theme:'#00e5ff',hud:1,tscale:1,tmul:1};
+const ST=Object.assign({},DEF);try{Object.assign(ST,JSON.parse(localStorage.getItem('sks')||'{}'))}catch(e){}
+const saveST=()=>{try{localStorage.setItem('sks',JSON.stringify(ST))}catch(e){}};
+let MODS=[];try{MODS=JSON.parse(localStorage.getItem('skmods')||'[]')}catch(e){}
+let MB={};try{MB=JSON.parse(localStorage.getItem('skmb')||'{}')}catch(e){}
 const rankOf=s=>s>=900?'S':s>=750?'A':s>=550?'B':s>=350?'C':'D';
 
 /* ===== データ層 (Firestore / localStorage) ===== */
@@ -145,9 +163,9 @@ grid(0xff2d95,0x3a1236,g=>{g.rotation.x=Math.PI/2;g.position.set(0,20,-34)});
 [-32,32].forEach(x=>grid(0x4d8dff,0x14264a,g=>{g.rotation.z=Math.PI/2;g.position.set(x,20,0)}));
 const deco=[];for(let i=0;i<16;i++){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(rnd(.8,2),0),new THREE.MeshBasicMaterial({color:i%2?0xff2d95:0x00e5ff,wireframe:true,transparent:true,opacity:.35}));
  m.position.set(rnd(-28,28),rnd(3,18),-rnd(22,32));ENV.add(m);deco.push(m)}
-let yaw=0,pitch=0,sens=+localStorage.getItem('sksens')||1,locked=false;
+let yaw=0,pitch=0,sens=ST.sens,locked=false;
 const setCam=()=>C.rotation.set(pitch,yaw,0);
-const mk=(col,r)=>{const g=new THREE.Group();
+const mk=(col,r)=>{r*=ST.tscale;const g=new THREE.Group();
  g.m=new THREE.Mesh(new THREE.SphereGeometry(r,28,18),new THREE.MeshBasicMaterial({color:col}));
  g.h=new THREE.Mesh(new THREE.SphereGeometry(r*1.5,16,12),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.18}));
  g.add(g.m,g.h);g.r=r;S.add(g);return g};
@@ -279,7 +297,7 @@ const ui=(a,b,c)=>{$('#h1').textContent=a;$('#h2').textContent=b;$('#h3').textCo
 function clearT(){S.children.filter(o=>o.r).forEach(rm);C.position.set(0,1.6,0);ENV.position.set(0,0,0)}
 function view(id){document.querySelectorAll('.scr').forEach(e=>e.classList.add('hide'));if(id)$('#'+id).classList.remove('hide');$('#hud').classList.toggle('hide',id!==null)}
 function begin(id){
- gm=G0[id];yaw=pitch=0;setCam();clearT();G={id,state:'cd',t0:performance.now(),dur:gm.dur};
+ gm=G0[id];yaw=pitch=0;setCam();clearT();G={id,state:'cd',t0:performance.now(),dur:gm.dur&&gm.dur*ST.tmul};
  $('#hn').textContent=gm.l[0];$('#l2').textContent=gm.l[1];$('#l3').textContent=gm.l[2];
  ui('-','-','-');view(null);
  if(touch){lt=jt=null;joy.x=joy.y=0;jy.style.display='none';$('#fire').textContent=gm.btn||'FIRE';$('#fire').classList.toggle('hide',!!gm.nobtn);if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{})}
@@ -287,14 +305,17 @@ function begin(id){
 async function finish(){
  if(G.state==='done')return;G.state='done';const id=G.id,r=gm.res();
  clearT();document.exitPointerLock();
- const nb=await D.submit(id,r.score,Object.fromEntries(r.stats));
+ const un=unranked(id),md=SK.find(k=>k.id===id).mod;let nb=false;
+ if(!un)nb=await D.submit(id,r.score,Object.fromEntries(r.stats));
+ else if(md){nb=r.score>(MB[id]??-1);if(nb){MB[id]=r.score;try{localStorage.setItem('skmb',JSON.stringify(MB))}catch(e){}}}
+ emit('end',id,r);
  $('#rn').textContent=SK.find(s=>s.id===id).n;$('#rr').textContent=rankOf(r.score);$('#rs').textContent=r.score;
- $('#rb').textContent=nb?'NEW BEST!':'ベスト '+D.p.best[id];
+ $('#rb').textContent=un&&!md?'UNRANKED(MOD・練習設定の使用中は記録されません)':nb?'NEW BEST!':'ベスト '+((md?MB[id]:D.p.best[id])??'-');
  $('#rst').innerHTML=r.stats.map(s=>`<div>${s[0]}<b>${s[1]}</b></div>`).join('');
  $('#again').onclick=()=>begin(id);$('#rrk').onclick=()=>showRank(id);view('res')}
 document.addEventListener('pointerlockchange',()=>{locked=document.pointerLockElement===$('#c');
  if(!locked&&G&&G.state!=='done'){G.state='done';clearT();menu()}});
-const look=(dx,dy,k=1)=>{yaw-=dx*sens*.0022*k;pitch=cl(pitch-dy*sens*.0022*k,-1.45,1.45);setCam()};
+const look=(dx,dy,k=1)=>{yaw-=dx*sens*.0022*k;pitch=cl(pitch-dy*(ST.invY?-1:1)*sens*.0022*k,-1.45,1.45);setCam()};
 addEventListener('mousemove',e=>{if(locked)look(e.movementX,e.movementY)});
 /* ===== タッチ操作: ドラッグで視点 / FIREで射撃 ===== */
 const touch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
@@ -304,34 +325,34 @@ lk.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changed
  if(gm&&gm.walk&&!jt&&t.clientX<innerWidth*.45){jt={id:t.identifier,x:t.clientX,y:t.clientY};jy.style.cssText=`display:block;left:${t.clientX-45}px;top:${t.clientY-45}px`;jy.firstChild.style.transform=''}
  else if(!lt)lt={id:t.identifier,x:t.clientX,y:t.clientY}}},NP);
 lk.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){
- if(lt&&t.identifier===lt.id){look(t.clientX-lt.x,t.clientY-lt.y,1.7);lt.x=t.clientX;lt.y=t.clientY}
+ if(lt&&t.identifier===lt.id){look(t.clientX-lt.x,t.clientY-lt.y,ST.tsens);lt.x=t.clientX;lt.y=t.clientY}
  else if(jt&&t.identifier===jt.id){let dx=(t.clientX-jt.x)/45,dy=(t.clientY-jt.y)/45;const l=Math.hypot(dx,dy);if(l>1){dx/=l;dy/=l}joy.x=dx;joy.y=dy;jy.firstChild.style.transform=`translate(${dx*30}px,${dy*30}px)`}}},NP);
 const lend=e=>{for(const t of e.changedTouches){if(lt&&t.identifier===lt.id)lt=null;if(jt&&t.identifier===jt.id){jt=null;joy.x=joy.y=0;jy.style.display='none'}}};
 lk.addEventListener('touchend',lend);lk.addEventListener('touchcancel',lend);
 const K={};addEventListener('keydown',e=>{K[e.code]=true;if(e.code==='Space'){e.preventDefault();if(G&&G.state==='run'&&gm.key)gm.key(e.code)}});addEventListener('keyup',e=>K[e.code]=false);
 function walk(dt,sp){const mx=(K.KeyD?1:0)-(K.KeyA?1:0)+joy.x,mz=(K.KeyW?1:0)-(K.KeyS?1:0)-joy.y,l=Math.hypot(mx,mz),k=l>1?1/l:1;
  G.px+=(-Math.sin(yaw)*mz+Math.cos(yaw)*mx)*k*sp*dt;G.pz+=(-Math.cos(yaw)*mz-Math.sin(yaw)*mx)*k*sp*dt}
-$('#fire').addEventListener('touchstart',e=>{e.preventDefault();if(G&&G.state==='run')gm.click(performance.now())},NP);
+$('#fire').addEventListener('touchstart',e=>{e.preventDefault();if(G&&G.state==='run')clk(performance.now())},NP);
 $('#qt').onclick=()=>{if(G){G.state='done';clearT();menu()}};
-addEventListener('mousedown',e=>{if(locked&&G&&G.state==='run'&&e.button===0)gm.click(performance.now())});
+addEventListener('mousedown',e=>{if(locked&&G&&G.state==='run'&&e.button===0)clk(performance.now())});
 function tick(now){requestAnimationFrame(tick);const dt=Math.min((now-(last||now))/1000,.1);last=now;
  deco.forEach((m,i)=>{m.rotation.x+=dt*.2;m.rotation.y+=dt*.15*(i%2?1:-1)});
  if(G&&G.state==='cd'){const r=3-(now-G.t0)/1000;msg(r>0?Math.ceil(r):'GO');
-  if(r<=0){G.state='run';G.t1=now;msg('');gm.start()}}
- else if(G&&G.state==='run')gm.tick(now,dt);
+  if(r<=0){G.state='run';G.t1=now;msg('');gm.start(now);emit('start',G.id)}}
+ else if(G&&G.state==='run'){gm.tick(now,dt);emit('tick',now,dt)}
  R.render(S,C)}
 requestAnimationFrame(tick);
 
 /* ===== メニュー / ランキング ===== */
 function menu(){
- G=null;if(document.fullscreenElement)document.exitFullscreen?.();$('#hint').textContent=touch?'画面ドラッグで視点・FIREで射撃':'プレイ中は ESC で中断';$('#who').textContent=D.p.name;$('#tot').textContent=D.p.total;
+ G=null;if(document.fullscreenElement)document.exitFullscreen?.();$('#hint').textContent=touch?'画面ドラッグで視点・FIREで射撃':'プレイ中は ESC で中断';$('#hint').textContent+=(MODS.some(m=>m.on&&!m.cos)||ST.tscale!=1||ST.tmul!=1)?' / ⚠ 非公式設定ON(記録されません)':'';$('#who').textContent=D.p.name;$('#tot').textContent=D.p.total;
  $('#mode').textContent=D.on?'ONLINE':'LOCAL (Firebase未設定)';$('#mode').className='tag '+(D.on?'on':'off');
- $('#cards').innerHTML=SK.map(k=>`<div class="card ${k.ok?'ok':''}" data-id="${k.id}"><h3 class="h">${k.n}</h3><p>${k.d}</p><div class="pb"><span>${k.ok?'自己ベスト':'COMING SOON'}</span><b>${k.ok?(D.p.best[k.id]??'-'):''}</b></div></div>`).join('');
- document.querySelectorAll('.card.ok').forEach(c=>c.onclick=()=>begin(c.dataset.id));view('menu')}
+ $('#cards').innerHTML=SK.map(k=>`<div class="card ${k.ok?'ok':''}" data-id="${k.id}"><h3 class="h">${k.n}${k.mod?' <span class="tag">MOD</span>':''}</h3><p>${k.d}</p><div class="pb"><span>${k.ok?'自己ベスト':'COMING SOON'}</span><b>${k.ok?((k.mod?MB[k.id]:D.p.best[k.id])??'-'):''}</b></div></div>`).join('');
+ document.querySelectorAll('.card.ok').forEach(c=>c.onclick=()=>begin(c.dataset.id));view('menu');emit('menu')}
 let tab='total';
 async function showRank(t){
  tab=t||tab;view('rank');
- $('#tabs').innerHTML=[['total','総合'],...SK.filter(k=>k.ok).map(k=>[k.id,k.n])].map(([id,n])=>`<button class="btn ${id===tab?'a':''}" data-t="${id}">${n}</button>`).join('');
+ $('#tabs').innerHTML=[['total','総合'],...SK.filter(k=>k.ok&&!k.mod).map(k=>[k.id,k.n])].map(([id,n])=>`<button class="btn ${id===tab?'a':''}" data-t="${id}">${n}</button>`).join('');
  document.querySelectorAll('#tabs .btn').forEach(b=>b.onclick=()=>showRank(b.dataset.t));
  $('#lb').innerHTML='<div class="em">読み込み中…</div>';
  let rows=[];try{rows=await D.rank(tab)}catch(e){console.error(e);$('#lb').innerHTML='<div class="em">取得に失敗しました。Firestoreのルールとインデックスを確認してください。</div>';return}
@@ -342,8 +363,85 @@ $('#rk').onclick=()=>showRank();$('#rkb').onclick=menu;$('#rm').onclick=menu;
 $('#ren').onclick=()=>{$('#nm').value=D.p.name;view('login')};
 $('#go').onclick=async()=>{const n=$('#nm').value.trim().slice(0,14);if(!n)return $('#nm').focus();D.p.name=n;await D.save();menu()};
 $('#nm').onkeydown=e=>{if(e.key==='Enter')$('#go').click()};
-const sv=$('#sens');sv.value=sens;$('#sv').textContent=sens.toFixed(2);
-sv.oninput=()=>{sens=+sv.value;$('#sv').textContent=sens.toFixed(2);localStorage.setItem('sksens',sens)};
+
+/* ===== 設定 / MOD ===== */
+const HK={};let curMod=null;
+const emit=(ev,...a)=>(HK[ev]||[]).forEach(h=>{try{h.fn(...a)}catch(e){console.error('[MOD '+h.m+']',e)}});
+const clk=now=>{gm.click(now);emit('click',now)};
+const unranked=id=>!!SK.find(k=>k.id===id).mod||MODS.some(m=>m.on&&!m.cos)||ST.tscale!=1||ST.tmul!=1;
+const SA={v:1,THREE,scene:S,camera:C,ST,mk,rm,ray,sph,rnd,cl,ui,msg,finish:()=>finish(),
+ get G(){return G},get yaw(){return yaw},get pitch(){return pitch},
+ on(ev,fn){(HK[ev]=HK[ev]||[]).push({fn,m:curMod})},
+ css(t){const e=document.createElement('style');e.textContent=t;document.head.appendChild(e)},
+ addSkill(d){if(!d||!d.id||SK.some(k=>k.id===d.id))return;SK.push({id:d.id,n:d.n||d.id,d:d.d||'MODスキル',ok:1,mod:1});G0[d.id]=Object.assign({l:['-','-','-'],tick(){},click(){}},d)}};
+function loadMods(){MODS.filter(m=>m.on).forEach(m=>{curMod=m.name;try{new Function('SA',m.code)(SA)}catch(e){console.error('[MOD '+m.name+']',e)}});curMod=null}
+const saveMods=()=>{try{localStorage.setItem('skmods',JSON.stringify(MODS))}catch(e){}};
+function parseMod(code){const g=k=>((code.match(new RegExp('//\\s*@'+k+'\\s+(.+)'))||[])[1]||'').trim();const name=g('name');
+ return name?{name,ver:g('version'),author:g('author'),cos:g('cosmetic')==='true',on:1,code}:null}
+function addMod(code){const m=parseMod(code);if(!m)return alert('先頭に「// @name 名前」が必要です');
+ if(!confirm('MODは任意のコードを実行します。信頼できる配布元のものだけ追加してください。\n「'+m.name+'」を追加しますか?'))return;
+ MODS=MODS.filter(x=>x.name!==m.name).concat(m);saveMods();location.reload()}
+const SAMPLES=[
+{n:'Red Crosshair',c:`// @name Red Crosshair
+// @version 1.0
+// @author sample
+// @cosmetic true
+SA.css('#cross b{background:#ff3b3b!important;box-shadow:0 0 0 1.5px #000,0 0 12px #ff3b3b!important}');`},
+{n:'Quick Clicker',c:`// @name Quick Clicker
+// @version 1.0
+// @author sample
+SA.addSkill({id:'clicker',n:'CLICKER',d:'10秒で何個撃てるか(MOD)',dur:10,l:['残り時間','命中','-'],
+ start(){const g=SA.G;g.h=0;g.t=null},
+ tick(now){const g=SA.G,left=g.dur-(now-g.t1)/1000;
+  if(!g.t){g.t=SA.mk(0x7dff9a,.7);g.t.position.copy(SA.sph(SA.rnd(-.6,.6),SA.rnd(-.3,.4),SA.rnd(10,18)))}
+  SA.ui(left.toFixed(1),g.h,'-');if(left<=0)SA.finish()},
+ click(){const g=SA.G;if(g.t&&SA.ray([g.t])){SA.rm(g.t);g.t=null;g.h++}},
+ res(){const g=SA.G;return{score:Math.min(1000,g.h*50),stats:[['命中数',g.h]]}}});`}];
+const CTL=[['sens','感度','r',.1,5,.05],['tsens','タッチ感度','r',.5,5,.1],['fov','FOV','r',60,110,1],['invY','Y軸反転','c'],
+['cs','クロスヘア','s',[['dot','ドット'],['cross','十字'],['circle','サークル']]],['csz','サイズ','r',2,16,1],['cg','ギャップ(十字)','r',0,12,1],['cc','クロスヘア色','o'],
+['theme','テーマ','s',[['#00e5ff','シアン'],['#4dff9a','グリーン'],['#a78bff','バイオレット'],['#ffa24d','オレンジ']]],['hud','HUD表示','c'],
+['tscale','的サイズ(練習)','r',.5,2,.05],['tmul','制限時間(練習)','r',.5,2,.05]];
+function crossHTML(){const{cs,csz:z,cg:g,cc:c}=ST,sh='0 0 0 1.5px #000',b=(x,y,w,h,e='')=>`<b style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${c};box-shadow:${sh}${e}"></b>`;
+ if(cs==='dot')return`<b style="left:${-z/2}px;top:${-z/2}px;width:${z}px;height:${z}px;border-radius:50%;background:${c};box-shadow:${sh}"></b>`;
+ if(cs==='circle')return`<b style="left:${-z}px;top:${-z}px;width:${z*2}px;height:${z*2}px;border-radius:50%;border:2px solid ${c};box-shadow:${sh}"></b>`;
+ const L=z*1.6+2;return b(-1,-g-L,2,L)+b(-1,g,2,L)+b(-g-L,-1,L,2)+b(g,-1,L,2)}
+function applyST(){C.fov=ST.fov;C.updateProjectionMatrix();sens=ST.sens;document.body.classList.toggle('nohud',!ST.hud);
+ document.documentElement.style.setProperty('--c',ST.theme);const h=crossHTML();$('#cross').innerHTML=h;const pc=$('#pc');if(pc)pc.innerHTML=h}
+function renderSet(){
+ $('#sg').innerHTML='<div class="pn" style="height:100px;position:relative;background:#0a1020"><div class="cx" id="pc"></div></div><div class="pn">'+CTL.map(([k,n,t,a,b,st])=>{const v=ST[k];
+  const el=t==='r'?`<input type="range" id="st_${k}" min="${a}" max="${b}" step="${st}" value="${v}"><span id="sv_${k}">${(+v).toFixed(2)}</span>`
+   :t==='c'?`<input type="checkbox" id="st_${k}" ${v?'checked':''}><span></span>`
+   :t==='o'?`<input type="color" id="st_${k}" value="${v}"><span></span>`
+   :`<select id="st_${k}">${a.map(o=>`<option value="${o[0]}" ${o[0]==v?'selected':''}>${o[1]}</option>`).join('')}</select><span></span>`;
+  return`<div class="sr"><span>${n}</span>${el.replace(/(<input[^>]*>|<select[\s\S]*?<\/select>)/,'<div>$1</div>')}</div>`}).join('')+'</div><p class="em" style="padding:6px">的サイズ・制限時間を変更すると、ランキングには記録されません。</p><button class="btn" id="srs">初期値に戻す</button>';
+ $('#srs').onclick=()=>{Object.assign(ST,DEF);saveST();applyST();renderSet()};applyST()}
+$('#sg').oninput=e=>{const id=e.target.id;if(!id.startsWith('st_'))return;const k=id.slice(3),c=CTL.find(x=>x[0]===k);
+ ST[k]=c[2]==='c'?+e.target.checked:c[2]==='r'?+e.target.value:e.target.value;const sp=$('#sv_'+k);if(sp)sp.textContent=(+ST[k]).toFixed(2);saveST();applyST()};
+function renderMods(){
+ $('#sm').innerHTML='<div class="pn">'+(MODS.length?MODS.map((m,i)=>`<div class="sr" style="grid-template-columns:1fr auto auto"><span><b>${esc(m.name)}</b> <small style="color:var(--dim)">${esc(m.ver)} ${esc(m.author)}</small> <span class="tag ${m.cos?'on':'off'}">${m.cos?'COSMETIC':'UNRANKED'}</span></span><button class="btn" data-t="${i}">${m.on?'ON':'OFF'}</button><button class="btn" data-d="${i}">削除</button></div>`).join(''):'<div class="em">MODはまだありません</div>')+'</div>'+
+ `<div class="pn" style="padding:14px"><div class="row"><button class="btn" id="mf">ファイル(.js)を追加</button><input type="file" id="mfi" accept=".js,text/javascript" class="hide">${SAMPLES.map((x,i)=>`<button class="btn" data-s="${i}">サンプル: ${x.n}</button>`).join('')}</div>
+ <textarea id="mc" placeholder="MODのコードを貼り付け(先頭に // @name 名前)"></textarea><div class="row" style="margin-top:8px"><button class="btn p" id="ma">コードを追加</button></div></div>
+ <details class="pn" style="padding:14px"><summary>MOD API</summary><pre>// @name 名前 (必須)  // @version  // @author
+// @cosmetic true → 見た目だけのMOD。記録の対象になる(それ以外は記録されない)
+
+SA.on('start'|'tick'|'click'|'end'|'menu', fn)
+SA.addSkill({id,n,d,dur,l:[ラベル3つ],btn,nobtn,walk,
+  start(now), tick(now,dt), click(now), res() → {score, stats:[[名前,値]]}})
+SA.mk(色,半径) SA.rm(的) SA.ray([的]) SA.sph(yaw,pitch,距離)
+SA.ui(a,b,c) SA.msg(文字) SA.finish()
+SA.G 現在のゲーム状態  SA.ST 設定  SA.yaw / SA.pitch
+SA.scene SA.camera SA.THREE SA.css(文字列)</pre></details>
+ <p class="em" style="padding:6px">⚠ MODはこのページ上で任意のコードを実行します。信頼できるものだけ使ってください。MODが原因で壊れたら URL の末尾に <b>?safe</b> を付けると全MODを無効で起動できます。</p>`}
+$('#sm').onclick=e=>{const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.t!=null){MODS[+t.dataset.t].on^=1;saveMods();location.reload()}
+ else if(t.dataset.d!=null){MODS.splice(+t.dataset.d,1);saveMods();location.reload()}
+ else if(t.dataset.s!=null)addMod(SAMPLES[+t.dataset.s].c);
+ else if(t.id==='mf')$('#mfi').click();else if(t.id==='ma')addMod($('#mc').value)};
+$('#sm').onchange=e=>{if(e.target.id==='mfi'&&e.target.files[0]){const f=new FileReader();f.onload=()=>addMod(f.result);f.readAsText(e.target.files[0])}};
+function showSet(t){document.querySelectorAll('#set .tabs .btn').forEach(b=>b.classList.toggle('a',b.dataset.s===t));$('#sg').classList.toggle('hide',t!=='g');$('#sm').classList.toggle('hide',t!=='m');t==='g'?renderSet():renderMods();view('set')}
+document.querySelectorAll('#set .tabs .btn').forEach(b=>b.onclick=()=>showSet(b.dataset.s));
+$('#opt').onclick=()=>showSet('g');$('#setb').onclick=menu;
+applyST();if(!/[?&]safe/.test(location.search))loadMods();
 D.init().then(()=>D.p.name?menu():view('login'));
 view('login');
 </script></body></html>
