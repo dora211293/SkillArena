@@ -107,7 +107,7 @@ const $=s=>document.querySelector(s),rnd=(a,b)=>a+Math.random()*(b-a),cl=(v,a,b)
 const SK=[
 {id:'aim',n:'AIM',d:'ターゲットを撃ち抜く(30秒)',ok:1},
 {id:'reaction',n:'REACTION',d:'出現した瞬間に反応(5回)',ok:1},
-{id:'tracking',n:'TRACKING',d:'動くターゲットを追い続ける(20秒)',ok:1},
+{id:'tracking',n:'TRACKING',d:'動く的を追い続ける(20秒・WASDで移動・20m以内)',ok:1},
 {id:'flick',n:'FLICK',d:'ランダム出現を素早く狙う(25秒)',ok:1},
 {id:'movement',n:'MOVEMENT',d:'3Dコースを走ってゴール(WASD+Space)',ok:1},
 {id:'dodge',n:'DODGE',d:'飛んでくる弾を避け続ける(WASD)',ok:1},
@@ -200,19 +200,25 @@ G0.reaction={n:5,l:['試行','平均(ms)','ミス'],
   return{score:Math.round(Math.max(0,1000*cl((450-a)/270,0,1)-G.miss*80)),
   stats:[['平均反応時間',Math.round(a)+' ms'],['最速',Math.round(best)+' ms'],['ミス回数',G.miss],['試行',G.rt.length]]}}};
 
-G0.tracking={dur:20,nobtn:1,l:['残り時間','追従率','ズレ(°)'],
- start(){G.on=G.tot=G.err=G.cur=G.mx=0;G.tg=mk(0xff2d95,.8)},
- tick(now,dt){const t=(now-G.t1)/1000,s=1+t*.03,u=t*s;
-  G.tg.position.set(Math.sin(u*.7)*9+Math.sin(u*1.9)*3,cl(7+Math.sin(u*.9+1)*4+Math.sin(u*2.3),1,15),-19+Math.sin(u*.5)*4);
-  C.updateMatrixWorld();const f=C.getWorldDirection(new THREE.Vector3()),v=G.tg.position.clone().sub(C.position),
-  ang=f.angleTo(v),on=ang<Math.atan(G.tg.r/v.length());
-  G.tot+=dt;G.err+=ang*dt;if(on){G.on+=dt;G.cur+=dt;G.mx=Math.max(G.mx,G.cur)}else G.cur=0;
-  G.tg.m.material.color.set(on?0x7dff9a:0xff2d95);G.tg.h.scale.setScalar(on?1.25:1);
-  ui((G.dur-t).toFixed(1),(G.on/G.tot*100).toFixed(0)+'%',(G.err/G.tot*57.3).toFixed(1));if(t>=G.dur)finish()},
+G0.tracking={dur:20,nobtn:1,walk:1,R:20,l:['残り時間','追従率','距離'],
+ start(){G.on=G.tot=G.err=G.cur=G.mx=G.far=0;G.px=G.pz=0;G.tg=mk(0xff2d95,.8);
+  G.rg=new THREE.Mesh(new THREE.RingGeometry(this.R-.2,this.R,96),new THREE.MeshBasicMaterial({color:0x00e5ff,side:2,transparent:true,opacity:.55}));G.rg.rotation.x=-Math.PI/2;G.rg.r=1;S.add(G.rg)},
+ tick(now,dt){const t=(now-G.t1)/1000,u=t*(1+t*.015),R=this.R;
+  walk(dt,7.5);const q=Math.hypot(G.px,G.pz);if(q>38){G.px*=38/q;G.pz*=38/q}
+  C.position.set(G.px,1.6,G.pz);ENV.position.set(G.px,0,G.pz);
+  const tp=G.tg.position.set(Math.sin(u*.35)*14+Math.sin(u*1.1)*3,cl(7+Math.sin(u*.9+1)*4+Math.sin(u*2.3),1,15),-16+Math.sin(u*.27)*12);
+  const d=Math.hypot(tp.x-G.px,tp.z-G.pz),near=d<=R;
+  G.rg.position.set(tp.x,.03,tp.z);G.rg.material.color.set(near?0x00e5ff:0xff3b3b);
+  C.updateMatrixWorld();const f=C.getWorldDirection(new THREE.Vector3()),v=tp.clone().sub(C.position),
+  ang=f.angleTo(v),on=near&&ang<Math.atan(G.tg.r/v.length());
+  G.tot+=dt;G.err+=ang*dt;if(!near)G.far+=dt;if(on){G.on+=dt;G.cur+=dt;G.mx=Math.max(G.mx,G.cur)}else G.cur=0;
+  G.tg.m.material.color.set(on?0x7dff9a:near?0xff2d95:0x777777);G.tg.h.scale.setScalar(on?1.25:1);
+  msg(near?'':'距離オーバー! ターゲットに近づけ',near?0:1);
+  ui((G.dur-t).toFixed(1),(G.on/G.tot*100).toFixed(0)+'%',d.toFixed(0)+'m');if(t>=G.dur)finish()},
  click(){},
  res(){const r=G.on/G.tot,me=G.err/G.tot*57.3;
   return{score:Math.round(1000*(r*.75+Math.max(0,1-me/12)*.25)),
-  stats:[['追従率',(r*100).toFixed(1)+'%'],['平均ズレ',me.toFixed(1)+'°'],['最長維持',G.mx.toFixed(2)+' s'],['追従時間',G.on.toFixed(1)+' s']]}}};
+  stats:[['追従率',(r*100).toFixed(1)+'%'],['平均ズレ',me.toFixed(1)+'°'],['最長維持',G.mx.toFixed(2)+' s'],['距離外時間',G.far.toFixed(1)+' s']]}}};
 
 const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 G0.flick={dur:25,l:['残り時間','命中','平均(ms)'],
@@ -297,6 +303,7 @@ const ui=(a,b,c)=>{$('#h1').textContent=a;$('#h2').textContent=b;$('#h3').textCo
 function clearT(){S.children.filter(o=>o.r).forEach(rm);C.position.set(0,1.6,0);ENV.position.set(0,0,0)}
 function view(id){document.querySelectorAll('.scr').forEach(e=>e.classList.add('hide'));if(id)$('#'+id).classList.remove('hide');$('#hud').classList.toggle('hide',id!==null)}
 function begin(id){
+ if(!SK.some(k=>k.id===id)||!G0[id])return;
  gm=G0[id];yaw=pitch=0;setCam();clearT();G={id,state:'cd',t0:performance.now(),dur:gm.dur&&gm.dur*ST.tmul};
  $('#hn').textContent=gm.l[0];$('#l2').textContent=gm.l[1];$('#l3').textContent=gm.l[2];
  ui('-','-','-');view(null);
@@ -345,7 +352,7 @@ requestAnimationFrame(tick);
 
 /* ===== メニュー / ランキング ===== */
 function menu(){
- G=null;if(document.fullscreenElement)document.exitFullscreen?.();$('#hint').textContent=touch?'画面ドラッグで視点・FIREで射撃':'プレイ中は ESC で中断';$('#hint').textContent+=(MODS.some(m=>m.on&&!m.cos)||ST.tscale!=1||ST.tmul!=1)?' / ⚠ 非公式設定ON(記録されません)':'';$('#who').textContent=D.p.name;$('#tot').textContent=D.p.total;
+ lockSK();G=null;if(document.fullscreenElement)document.exitFullscreen?.();$('#hint').textContent=touch?'画面ドラッグで視点・FIREで射撃':'プレイ中は ESC で中断';$('#hint').textContent+=(MODS.some(m=>m.on&&!m.cos)||ST.tscale!=1||ST.tmul!=1)?' / ⚠ 非公式設定ON(記録されません)':'';$('#who').textContent=D.p.name;$('#tot').textContent=D.p.total;
  $('#mode').textContent=D.on?'ONLINE':'LOCAL (Firebase未設定)';$('#mode').className='tag '+(D.on?'on':'off');
  $('#cards').innerHTML=SK.map(k=>`<div class="card ${k.ok?'ok':''}" data-id="${k.id}"><h3 class="h">${k.n}${k.mod?' <span class="tag">MOD</span>':''}</h3><p>${k.d}</p><div class="pb"><span>${k.ok?'自己ベスト':'COMING SOON'}</span><b>${k.ok?((k.mod?MB[k.id]:D.p.best[k.id])??'-'):''}</b></div></div>`).join('');
  document.querySelectorAll('.card.ok').forEach(c=>c.onclick=()=>begin(c.dataset.id));view('menu');emit('menu')}
@@ -372,9 +379,9 @@ const unranked=id=>!!SK.find(k=>k.id===id).mod||MODS.some(m=>m.on&&!m.cos)||ST.t
 const SA={v:1,THREE,scene:S,camera:C,ST,mk,rm,ray,sph,rnd,cl,ui,msg,finish:()=>finish(),
  get G(){return G},get yaw(){return yaw},get pitch(){return pitch},
  on(ev,fn){(HK[ev]=HK[ev]||[]).push({fn,m:curMod})},
- css(t){const e=document.createElement('style');e.textContent=t;document.head.appendChild(e)},
- addSkill(d){if(!d||!d.id||SK.some(k=>k.id===d.id))return;SK.push({id:d.id,n:d.n||d.id,d:d.d||'MODスキル',ok:1,mod:1});G0[d.id]=Object.assign({l:['-','-','-'],tick(){},click(){}},d)}};
-function loadMods(){MODS.filter(m=>m.on).forEach(m=>{curMod=m.name;try{new Function('SA',m.code)(SA)}catch(e){console.error('[MOD '+m.name+']',e)}});curMod=null}
+ css(t){const e=document.createElement('style');e.textContent=t;document.head.appendChild(e)}};
+const BASE=SK.length,lockSK=()=>{SK.length=BASE;Object.keys(G0).forEach(k=>{if(!SK.some(x=>x.id===k))delete G0[k]})};
+function loadMods(){MODS.filter(m=>m.on).forEach(m=>{curMod=m.name;try{new Function('SA',m.code)(SA)}catch(e){console.error('[MOD '+m.name+']',e)}});curMod=null;lockSK()}
 const saveMods=()=>{try{localStorage.setItem('skmods',JSON.stringify(MODS))}catch(e){}};
 function parseMod(code){const g=k=>((code.match(new RegExp('//\\s*@'+k+'\\s+(.+)'))||[])[1]||'').trim();const name=g('name');
  return name?{name,ver:g('version'),author:g('author'),cos:g('cosmetic')==='true',on:1,code}:null}
@@ -386,17 +393,7 @@ const SAMPLES=[
 // @version 1.0
 // @author sample
 // @cosmetic true
-SA.css('#cross b{background:#ff3b3b!important;box-shadow:0 0 0 1.5px #000,0 0 12px #ff3b3b!important}');`},
-{n:'Quick Clicker',c:`// @name Quick Clicker
-// @version 1.0
-// @author sample
-SA.addSkill({id:'clicker',n:'CLICKER',d:'10秒で何個撃てるか(MOD)',dur:10,l:['残り時間','命中','-'],
- start(){const g=SA.G;g.h=0;g.t=null},
- tick(now){const g=SA.G,left=g.dur-(now-g.t1)/1000;
-  if(!g.t){g.t=SA.mk(0x7dff9a,.7);g.t.position.copy(SA.sph(SA.rnd(-.6,.6),SA.rnd(-.3,.4),SA.rnd(10,18)))}
-  SA.ui(left.toFixed(1),g.h,'-');if(left<=0)SA.finish()},
- click(){const g=SA.G;if(g.t&&SA.ray([g.t])){SA.rm(g.t);g.t=null;g.h++}},
- res(){const g=SA.G;return{score:Math.min(1000,g.h*50),stats:[['命中数',g.h]]}}});`}];
+SA.css('#cross b{background:#ff3b3b!important;box-shadow:0 0 0 1.5px #000,0 0 12px #ff3b3b!important}');`}];
 const CTL=[['sens','感度','r',.1,5,.05],['tsens','タッチ感度','r',.5,5,.1],['fov','FOV','r',60,110,1],['invY','Y軸反転','c'],
 ['cs','クロスヘア','s',[['dot','ドット'],['cross','十字'],['circle','サークル']]],['csz','サイズ','r',2,16,1],['cg','ギャップ(十字)','r',0,12,1],['cc','クロスヘア色','o'],
 ['theme','テーマ','s',[['#00e5ff','シアン'],['#4dff9a','グリーン'],['#a78bff','バイオレット'],['#ffa24d','オレンジ']]],['hud','HUD表示','c'],
@@ -425,8 +422,6 @@ function renderMods(){
 // @cosmetic true → 見た目だけのMOD。記録の対象になる(それ以外は記録されない)
 
 SA.on('start'|'tick'|'click'|'end'|'menu', fn)
-SA.addSkill({id,n,d,dur,l:[ラベル3つ],btn,nobtn,walk,
-  start(now), tick(now,dt), click(now), res() → {score, stats:[[名前,値]]}})
 SA.mk(色,半径) SA.rm(的) SA.ray([的]) SA.sph(yaw,pitch,距離)
 SA.ui(a,b,c) SA.msg(文字) SA.finish()
 SA.G 現在のゲーム状態  SA.ST 設定  SA.yaw / SA.pitch
